@@ -1,10 +1,12 @@
 package com.example.user.dto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-public class CreateUserRequest {
-    private String username;
+@NoArgsConstructor
+public class LoginRequest {
+
     private String email;
     private String password;
 }

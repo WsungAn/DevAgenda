@@ -1,7 +1,9 @@
 package com.example.user.controller;
 
 import com.example.user.dto.*;
+import com.example.user.entity.User;
 import com.example.user.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,4 +43,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<Void> login(
+            @RequestBody LoginRequest request, HttpSession session) {
+        User user = userService.login(request);
+        session.setAttribute("LOGIN_USER", user.getId());
+        return ResponseEntity.ok().build();
+    }
 }

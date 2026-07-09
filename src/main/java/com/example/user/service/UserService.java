@@ -18,9 +18,13 @@ public class UserService {
 
     @Transactional
     public CreateUserResponse save(CreateUserRequest request) {
+        if (request.getPassword().length() < 8) {
+            throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
+        }
         User user = new User(
                 request.getUsername(),
-                request.getEmail()
+                request.getEmail(),
+                request.getPassword()
         );
         User savedUser = userRepository.save(user);
         return new CreateUserResponse(
@@ -29,6 +33,7 @@ public class UserService {
                 savedUser.getCreatedAt(),
                 savedUser.getModifiedAt()
         );
+
     }
 
 
@@ -51,7 +56,7 @@ public class UserService {
         if (username == null || username.isBlank()) {
             users = userRepository.findAll();
         } else {
-            users = userRepository.findByUsernameOrderByModifiedAtDesc(username);
+            users = userRepository.findByUsername(username);
         }
         List<GetUserResponse> dtos = new ArrayList<>();
         for (User user : users) {
@@ -72,9 +77,6 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new IllegalStateException("없는 유저입니다.")
         );
-        if (!user.getPassword().equals(request.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
         user.update(
                 request.getUsername(),
                 request.getEmail()
@@ -98,6 +100,16 @@ public class UserService {
         if (!user.getPassword().equals(request.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
+    }
 
+    @Transactional(readOnly = true)
+    public User login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
+
+        if (!user.getPassword().equals(request.getPassword())) {
+            throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
+        }
+        return user;
     }
 }
